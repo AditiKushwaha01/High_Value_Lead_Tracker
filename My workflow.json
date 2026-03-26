@@ -1,0 +1,287 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "08d10612-ba88-4e79-9fb7-441c1a846e25",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f363f888-d230-44b2-9309-fa69d0f80633",
+              "leftValue": "={{$json[\"followers\"]}}",
+              "rightValue": 100,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "e5750300-d7c4-4a3e-bc15-e8123dc7990a",
+              "leftValue": "={{ $json[\"public_repos\"] }}",
+              "rightValue": 50,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        624,
+        0
+      ],
+      "id": "005350ff-e375-46d8-8155-5f2326081986",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=Analyze the following GitHub user and generate a short one line outreach pitch.\n\nReturn:\n- name\n- bio\n- text\n\nUser data:\nName: {{$json[\"name\"]}}\nBio: {{$json[\"bio\"]}}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "textFormat": {
+            "textOptions": {
+              "type": "json_schema",
+              "schema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"name\": {\n      \"type\": \"string\"\n    },\n    \"bio\": {\n      \"type\": \"string\"\n    },\n    \"text\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\"name\", \"bio\", \"text\"],\n  \"additionalProperties\": false\n}"
+            }
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        832,
+        -96
+      ],
+      "id": "f663653b-0d91-4abf-9a27-1f36fda216f0",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "mqrScwZk7GqtoymF",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://discord.com/api/webhooks/1486686371916812420/CuAFsggiBGBYRRXvjJNjxeWg3wL3gJy9zCYbejyetqnbxaJqAglhNq6cpHwL_4XhEDU3",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "{   \"content\": \"High Value Lead!\\n\\nName: {{$json.name}}\\nBio: {{$json.bio}}\\n\\nPitch: {{$json.text}}\" }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1408,
+        -112
+      ],
+      "id": "cdb209cd-2524-47da-80e5-954f47b4625a",
+      "name": "Discord"
+    },
+    {
+      "parameters": {
+        "url": "https://api.github.com/repos/n8n-io/n8n/stargazers",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "per_page",
+              "value": "5"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "561008f1-8f3e-4916-b26b-fc9f834d3fc3",
+      "name": "Stargazer",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "fZPkcp7T4PNchrBP",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/users/{{ $json[\"login\"]}}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "2c2a04f3-e05c-4183-b1fc-6ea718ad6983",
+      "name": "GitHub",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "fZPkcp7T4PNchrBP",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d026a34e-4885-40f0-8258-729f1207daea",
+              "name": "name",
+              "value": "{{ $json[\"output\"][0][\"content\"][0][\"text\"][\"name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "b8d9f3cb-4426-4338-8bb2-ea7c6f9c26c3",
+              "name": "bio",
+              "value": "{{ $json[\"output\"][0][\"content\"][0][\"text\"][\"bio\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "a93f8e8b-59f5-452e-ae8f-3f34cd7e3e06",
+              "name": "text",
+              "value": "{{ $json[\"output\"][0][\"content\"][0][\"text\"][\"text\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1184,
+        -96
+      ],
+      "id": "0222a753-92ca-4c51-a6df-b0f01e79d7c6",
+      "name": "Set",
+      "alwaysOutputData": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Stargazer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Set",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stargazer": {
+      "main": [
+        [
+          {
+            "node": "GitHub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set": {
+      "main": [
+        [
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4f19ea87-fd19-433b-b4da-0b83b2591d86",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3c5f599b22172b052228d07365427826eef3b7690d0204031180e518d140ca6f"
+  },
+  "id": "0sFxb7Wkru6JX5fP",
+  "tags": []
+}
