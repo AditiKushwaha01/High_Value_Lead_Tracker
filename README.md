@@ -1,7 +1,7 @@
 #**High Value Lead Tracker** 
 *Overview*
 
-This n8n workflow identifies high-value GitHub users from a repository’s stargazers, generates a personalized outreach pitch using OpenAI’s GPT-4O-MINI model, and sends the message to a Discord channel.
+This n8n workflow identifies high-value GitHub users from a repository’s stargazers, generates a personalized single line outreach pitch using OpenAI’s GPT-4O-MINI model, and sends the message to a Discord channel.
 
 *Workflow Steps:*
 
